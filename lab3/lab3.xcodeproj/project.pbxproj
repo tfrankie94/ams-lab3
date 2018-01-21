@@ -14,6 +14,9 @@
 		D279E4791FFF873A00F44FB8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D279E4771FFF873A00F44FB8 /* LaunchScreen.storyboard */; };
 		D279E4841FFF873B00F44FB8 /* lab3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D279E4831FFF873B00F44FB8 /* lab3Tests.swift */; };
 		D279E48F1FFF873B00F44FB8 /* lab3UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D279E48E1FFF873B00F44FB8 /* lab3UITests.swift */; };
+		D292347020152FFA00A7A397 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292346F20152FFA00A7A397 /* PhotosViewController.swift */; };
+		D29234722015309700A7A397 /* PhotosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29234712015309700A7A397 /* PhotosService.swift */; };
+		D29234742015480000A7A397 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29234732015480000A7A397 /* Photo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +50,9 @@
 		D279E48A1FFF873B00F44FB8 /* lab3UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = lab3UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D279E48E1FFF873B00F44FB8 /* lab3UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = lab3UITests.swift; sourceTree = "<group>"; };
 		D279E4901FFF873B00F44FB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D292346F20152FFA00A7A397 /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
+		D29234712015309700A7A397 /* PhotosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosService.swift; sourceTree = "<group>"; };
+		D29234732015480000A7A397 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +109,9 @@
 				D279E4751FFF873A00F44FB8 /* Assets.xcassets */,
 				D279E4771FFF873A00F44FB8 /* LaunchScreen.storyboard */,
 				D279E47A1FFF873A00F44FB8 /* Info.plist */,
+				D292346F20152FFA00A7A397 /* PhotosViewController.swift */,
+				D29234712015309700A7A397 /* PhotosService.swift */,
+				D29234732015480000A7A397 /* Photo.swift */,
 			);
 			path = lab3;
 			sourceTree = "<group>";
@@ -194,6 +203,11 @@
 					D279E46A1FFF873A00F44FB8 = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					D279E47E1FFF873B00F44FB8 = {
 						CreatedOnToolsVersion = 9.2;
@@ -259,8 +273,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D29234722015309700A7A397 /* PhotosService.swift in Sources */,
+				D292347020152FFA00A7A397 /* PhotosViewController.swift in Sources */,
 				D279E4711FFF873A00F44FB8 /* ViewController.swift in Sources */,
 				D279E46F1FFF873A00F44FB8 /* AppDelegate.swift in Sources */,
+				D29234742015480000A7A397 /* Photo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
