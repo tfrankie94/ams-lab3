@@ -20,4 +20,6 @@ class Photo {
         self.index = index
     }
     
+    var location: String?
+    
 }

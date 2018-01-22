@@ -8,6 +8,12 @@
 
 import UIKit
 
+class PhotoCell: UITableViewCell {
+    @IBOutlet weak var photoName: UILabel!
+    @IBOutlet weak var photoProgress: UILabel!
+    @IBOutlet weak var photoImage: UIImageView!
+}
+
 class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessionDownloadDelegate {
 
     var photos : [Photo]?
@@ -22,6 +28,8 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         super.viewDidLoad()
         photosService = PhotosService();
         photosService?.downloadsSession = downloadsSession
+        
+        tableView.rowHeight = 100
     }
     
     override func viewWillAppear(_ animated: Bool){
@@ -44,15 +52,16 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     
     override func tableView(_ tableView: UITableView,
                             cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "PhotoCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "PhotoCell", for: indexPath) as! PhotoCell
         
         let photo = photos![indexPath.row]
         
-        cell.textLabel?.text = "\(photo.url)"
-        if (photo.progress == 1) {
-            cell.detailTextLabel?.text = "Downloaded."
-        } else {
-            cell.detailTextLabel?.text = "Progress \(photo.progress*100)%"
+        cell.photoName?.text = "\(photo.url.lastPathComponent)"
+        cell.photoProgress?.text = "Progress \(photo.progress*100)%"
+//        print("\(photo.url.lastPathComponent): \(photo.downloaded)")
+
+        if (photo.downloaded) {
+            cell.photoImage.image = loadImage(filePath: photo.location!)
         }
         return cell
     }
@@ -62,15 +71,8 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         
         guard let url = downloadTask.originalRequest?.url else { return }
         let download = photosService?.activeDownloads[url]
-        download?.photo.progress = 1
-        if let index = download?.photo.index {
-            DispatchQueue.main.async {
-                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-            }
-        }
-        photosService?.activeDownloads[url] = nil
 
-        //SAVE ILE TO DOCUMENTS
+        //SAVE FILE TO DOCUMENTS
         let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         let destinationFile = NSURL(fileURLWithPath: docDir).appendingPathComponent(url.lastPathComponent)?.path
         let fileManager = FileManager.default
@@ -80,24 +82,39 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         do {
             try fileManager.copyItem(atPath: location.path, toPath: destinationFile!)
             download?.photo.downloaded = true
+            download?.photo.location = destinationFile;
         } catch let error {
             print("Could not copy file to disk: \(error.localizedDescription)")
         }
+        reloadCell(url: url, progress: 1)
+        photosService?.activeDownloads[url] = nil
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,                  totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         
         guard let url = downloadTask.originalRequest?.url else { return }
+        reloadCell(url: url, progress: Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
+    }
+    
+    private func reloadCell(url: URL, progress: Float) {
         let download = photosService?.activeDownloads[url]
-        download?.photo.progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-        
-        DispatchQueue.main.async {
-            self.tableView.reloadRows(at: [IndexPath(row: (download?.photo.index)!, section: 0)], with: .none)
+        download?.photo.progress = progress
+        if let index = download?.photo.index {
+            DispatchQueue.main.async {
+                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+            }
         }
     }
     
-    private func getPhotoByUrl(url: String) -> Photo? {
-        return photos![0];
+    private func loadImage(filePath: String) -> UIImage? {
+        let fileUrl = NSURL(fileURLWithPath: filePath)
+        do {
+            let imageData = try Data(contentsOf: fileUrl as URL)
+            return UIImage(data: imageData)
+        } catch {
+            print("Error loading image : \(error)")
+        }
+        return nil
     }
     
 }
