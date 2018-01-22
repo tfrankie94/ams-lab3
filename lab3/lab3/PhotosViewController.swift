@@ -33,12 +33,6 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         }
         
     }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-//        TODO: IMPLEMENT STOP
-//        DownloadManager.shared.onProgress = nil
-    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if photos != nil {
@@ -66,39 +60,29 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         
-        
         guard let url = downloadTask.originalRequest?.url else { return }
         let download = photosService?.activeDownloads[url]
         download?.photo.progress = 1
-        
-        DispatchQueue.main.async {
-            self.tableView.reloadRows(at: [IndexPath(row: (download?.photo.index)!, section: 0)], with: .none)
+        if let index = download?.photo.index {
+            DispatchQueue.main.async {
+                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+            }
         }
-        
         photosService?.activeDownloads[url] = nil
-//
-//        var destinationURL = URL.init(string: "eh");
-//        let fileManager = FileManager.default
-//        try? fileManager.removeItem(at: destinationURL!)
-//        do {
-//            try fileManager.copyItem(at: location, to: destinationURL!)
-//            download?.photo.downloaded = true
-//        } catch let error {
-//            print("Could not copy file to disk: \(error.localizedDescription)")
-//        }
-//        if let index = download?.photo.index {
-//            DispatchQueue.main.async {
-//                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-//            }
-//        }
-        
 
-        print("TODO: ")
-        //        you can check if a file exists using the file manager's fileExists(atPath:) method
-        //        to delete a file, use removeItem(atPath:)
-        //        to copy a file, use copyItem(atPath:toPath:)
-        //        File manipulation functions throw exceptions. The easiest way to deal with them is to use try? (which results in an optional) or try! (if you are sure what you're doing). More info on error handling
-        //            If the download completes when the app is inactive, the application(_:handleEventsForBackgroundURLSession:completionHandler:) will be called instead. Handle that event appropriately as well.
+        //SAVE ILE TO DOCUMENTS
+        let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        let destinationFile = NSURL(fileURLWithPath: docDir).appendingPathComponent(url.lastPathComponent)?.path
+        let fileManager = FileManager.default
+        if (fileManager.fileExists(atPath: destinationFile!)) {
+            try?  fileManager.removeItem(atPath: destinationFile!)
+        }
+        do {
+            try fileManager.copyItem(atPath: location.path, toPath: destinationFile!)
+            download?.photo.downloaded = true
+        } catch let error {
+            print("Could not copy file to disk: \(error.localizedDescription)")
+        }
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,                  totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {

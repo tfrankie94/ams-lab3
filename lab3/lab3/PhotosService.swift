@@ -14,11 +14,11 @@ class PhotosService {
     var downloadsSession: URLSession?
         
     var photos = [
-        Photo(url: URL.init(string: "https://upload.wikimedia.org/wikipedia/commons/0/04/Dyck,_Anthony_van_-_Family_Portrait.jpg")!, index: 0),
-//        Photo("https://upload.wikimedia.org/wikipedia/commons/0/06/Master_of_Flémalle_-_Portrait_of_a_Fat_Man_-_Google_Art_Project_(331318).jpg"),
-//        Photo("https://upload.wikimedia.org/wikipedia/commons/c/ce/Petrus_Christus_-_Portrait_of_a_Young_Woman_-_Google_Art_Project.jpg"),
-//        Photo("https://upload.wikimedia.org/wikipedia/commons/3/36/Quentin_Matsys_-_A_Grotesque_old_woman.jpg"),
-//        Photo("https://upload.wikimedia.org/wikipedia/commons/c/c8/Valmy_Battle_painting.jpg"),
+        Photo(url: URL(string: "https://upload.wikimedia.org/wikipedia/commons/0/04/Dyck,_Anthony_van_-_Family_Portrait.jpg")!, index: 0),
+        Photo(url: URL(string: "https://upload.wikimedia.org/wikipedia/commons/0/06/Master_of_Fl%C3%A9malle_-_Portrait_of_a_Fat_Man_-_Google_Art_Project_(331318).jpg")!, index: 1),
+        Photo(url: URL(string: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Petrus_Christus_-_Portrait_of_a_Young_Woman_-_Google_Art_Project.jpg")!, index: 2),
+        Photo(url: URL(string: "https://upload.wikimedia.org/wikipedia/commons/3/36/Quentin_Matsys_-_A_Grotesque_old_woman.jpg")!, index: 3),
+        Photo(url: URL(string: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Valmy_Battle_painting.jpg")!, index: 4)
     ]
     
     func startDownload(_ photo: Photo) {
