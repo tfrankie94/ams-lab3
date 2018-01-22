@@ -10,12 +10,14 @@ import Foundation
 
 class Photo {
     
-    var url: String
-    var progress: Float
+    var url: URL
+    let index: Int
+    var progress: Float = 0;
+    var downloaded = false
     
-    init(url: String, progress: Float = 0) {
+    init(url: URL, index: Int) {
         self.url = url
-        self.progress = progress
+        self.index = index
     }
     
 }

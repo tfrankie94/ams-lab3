@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D277FDB42015ED91006373EC /* Download.swift in Sources */ = {isa = PBXBuildFile; fileRef = D277FDB32015ED91006373EC /* Download.swift */; };
 		D279E46F1FFF873A00F44FB8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D279E46E1FFF873A00F44FB8 /* AppDelegate.swift */; };
 		D279E4711FFF873A00F44FB8 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D279E4701FFF873A00F44FB8 /* ViewController.swift */; };
 		D279E4741FFF873A00F44FB8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D279E4721FFF873A00F44FB8 /* Main.storyboard */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D277FDB32015ED91006373EC /* Download.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Download.swift; sourceTree = "<group>"; };
 		D279E46B1FFF873A00F44FB8 /* lab3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = lab3.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D279E46E1FFF873A00F44FB8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D279E4701FFF873A00F44FB8 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				D292346F20152FFA00A7A397 /* PhotosViewController.swift */,
 				D29234712015309700A7A397 /* PhotosService.swift */,
 				D29234732015480000A7A397 /* Photo.swift */,
+				D277FDB32015ED91006373EC /* Download.swift */,
 			);
 			path = lab3;
 			sourceTree = "<group>";
@@ -276,6 +279,7 @@
 				D29234722015309700A7A397 /* PhotosService.swift in Sources */,
 				D292347020152FFA00A7A397 /* PhotosViewController.swift in Sources */,
 				D279E4711FFF873A00F44FB8 /* ViewController.swift in Sources */,
+				D277FDB42015ED91006373EC /* Download.swift in Sources */,
 				D279E46F1FFF873A00F44FB8 /* AppDelegate.swift in Sources */,
 				D29234742015480000A7A397 /* Photo.swift in Sources */,
 			);

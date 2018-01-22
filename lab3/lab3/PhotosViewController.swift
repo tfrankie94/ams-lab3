@@ -13,18 +13,23 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     var photos : [Photo]?
     var photosService: PhotosService?
     
+    lazy var downloadsSession: URLSession = {
+        let configuration = URLSessionConfiguration.background(withIdentifier: "pl.edu.agh.kis.bgDownload")
+        return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         photosService = PhotosService();
+        photosService?.downloadsSession = downloadsSession
     }
     
     override func viewWillAppear(_ animated: Bool){
         super.viewWillAppear(animated)
-        self.photos = photosService?.getPhotos();
+        self.photos = photosService?.photos
         
         for photo in photos! {
-            print("started downloading: \(photo)")
-            photosService?.downloadPhoto(url: photo.url, controller: self)
+            photosService?.startDownload(photo)
         }
         
     }
@@ -43,10 +48,6 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         }
     }
     
-    func photoDownload(url: String) {
-        print("DOWNLOADED \(url)")
-    }
-    
     override func tableView(_ tableView: UITableView,
                             cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PhotoCell", for: indexPath)
@@ -57,7 +58,7 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         if (photo.progress == 1) {
             cell.detailTextLabel?.text = "Downloaded."
         } else {
-            cell.detailTextLabel?.text = "Progress \(photo.progress)"
+            cell.detailTextLabel?.text = "Progress \(photo.progress*100)%"
         }
         return cell
     }
@@ -65,17 +66,33 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         
-        guard let url = downloadTask.originalRequest?.url,
-            let photo = self.getPhotoByUrl(url: url.path)  else { return }
-        photo.progress = 1;
-        self.tableView.reloadData();
         
+        guard let url = downloadTask.originalRequest?.url else { return }
+        let download = photosService?.activeDownloads[url]
+        download?.photo.progress = 1
         
-        print("well, looks like it's already downloaded to:")
-        print(location)
-        let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        let fileManager = FileManager.default
+        DispatchQueue.main.async {
+            self.tableView.reloadRows(at: [IndexPath(row: (download?.photo.index)!, section: 0)], with: .none)
+        }
         
+        photosService?.activeDownloads[url] = nil
+//
+//        var destinationURL = URL.init(string: "eh");
+//        let fileManager = FileManager.default
+//        try? fileManager.removeItem(at: destinationURL!)
+//        do {
+//            try fileManager.copyItem(at: location, to: destinationURL!)
+//            download?.photo.downloaded = true
+//        } catch let error {
+//            print("Could not copy file to disk: \(error.localizedDescription)")
+//        }
+//        if let index = download?.photo.index {
+//            DispatchQueue.main.async {
+//                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+//            }
+//        }
+        
+
         print("TODO: ")
         //        you can check if a file exists using the file manager's fileExists(atPath:) method
         //        to delete a file, use removeItem(atPath:)
@@ -86,28 +103,17 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,                  totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         
-        guard let url = downloadTask.originalRequest?.url,
-            let photo = self.getPhotoByUrl(url: url.path)  else { return }
-        photo.progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-        self.tableView.reloadData();
+        guard let url = downloadTask.originalRequest?.url else { return }
+        let download = photosService?.activeDownloads[url]
+        download?.photo.progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+        
+        DispatchQueue.main.async {
+            self.tableView.reloadRows(at: [IndexPath(row: (download?.photo.index)!, section: 0)], with: .none)
+        }
     }
     
     private func getPhotoByUrl(url: String) -> Photo? {
         return photos![0];
     }
     
-    private func calculateProgress(session : URLSession, completionHandler : @escaping (Float) -> ()) {
-        session.getTasksWithCompletionHandler { (tasks, uploads, downloads) in
-            let progress = downloads.map({ (task) -> Float in
-                if task.countOfBytesExpectedToReceive > 0 {
-                    return Float(task.countOfBytesReceived) / Float(task.countOfBytesExpectedToReceive)
-                } else {
-                    return 0.0
-                }
-            })
-            completionHandler(progress.reduce(0.0, +))
-        }
-    }
-
-
 }
