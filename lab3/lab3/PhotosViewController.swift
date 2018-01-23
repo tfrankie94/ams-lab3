@@ -63,6 +63,10 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         if (photo.downloaded) {
             cell.photoImage.image = loadImage(filePath: photo.location!)
         }
+        
+        if (photo.facesDetected != -1) {
+            cell.photoProgress?.text = "Faces detected: \(photo.facesDetected)"
+        }
         return cell
     }
     
@@ -71,6 +75,7 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         
         guard let url = downloadTask.originalRequest?.url else { return }
         let download = photosService?.activeDownloads[url]
+        photosService?.activeDownloads[url] = nil
 
         //SAVE FILE TO DOCUMENTS
         let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
@@ -86,23 +91,41 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         } catch let error {
             print("Could not copy file to disk: \(error.localizedDescription)")
         }
-        reloadCell(url: url, progress: 1)
-        photosService?.activeDownloads[url] = nil
+        reloadCell(photo: (download?.photo)!, progress: 1)
+        
+        detectFaces(photo: (download?.photo)!, filePath: destinationFile!)
+    }
+    
+    func detectFaces(photo: Photo, filePath: String) {
+        print("Detect faces for \(photo.url)")
+        print("Path: \(filePath)")
+        
+        guard let image = CIImage(image: loadImage(filePath: filePath)!) else {
+            return
+        }
+        let accuracy = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: accuracy)
+        let faces = faceDetector?.features(in: image)
+        
+        photo.facesDetected = (faces?.count)!;
+        reloadCell(photo: photo, progress: 1)
+        
     }
     
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64,                  totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         
         guard let url = downloadTask.originalRequest?.url else { return }
-        reloadCell(url: url, progress: Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
+        let download = photosService?.activeDownloads[url]
+
+        reloadCell(photo: (download?.photo)!, progress: Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
     }
     
-    private func reloadCell(url: URL, progress: Float) {
-        let download = photosService?.activeDownloads[url]
-        download?.photo.progress = progress
-        if let index = download?.photo.index {
-            DispatchQueue.main.async {
-                self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-            }
+    private func reloadCell(photo: Photo, progress: Float) {
+//        let download = photosService?.activeDownloads[url]
+        photo.progress = progress
+        let index = photo.index;
+        DispatchQueue.main.async {
+            self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
         }
     }
     

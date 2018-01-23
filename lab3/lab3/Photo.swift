@@ -14,6 +14,7 @@ class Photo {
     let index: Int
     var progress: Float = 0;
     var downloaded = false
+    var facesDetected = -1;
     
     init(url: URL, index: Int) {
         self.url = url
