@@ -18,6 +18,7 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
 
     var photos : [Photo]?
     var photosService: PhotosService?
+    var start: NSDate?
     
     lazy var downloadsSession: URLSession = {
         let configuration = URLSessionConfiguration.background(withIdentifier: "pl.edu.agh.kis.bgDownload")
@@ -35,8 +36,10 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
     override func viewWillAppear(_ animated: Bool){
         super.viewWillAppear(animated)
         self.photos = photosService?.photos
+        self.start = NSDate()
         
         for photo in photos! {
+            print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) started download of \(photo.url)")
             photosService?.startDownload(photo)
         }
         
@@ -58,7 +61,6 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         
         cell.photoName?.text = "\(photo.url.lastPathComponent)"
         cell.photoProgress?.text = "Progress \(photo.progress*100)%"
-//        print("\(photo.url.lastPathComponent): \(photo.downloaded)")
 
         if (photo.downloaded) {
             cell.photoImage.image = loadImage(filePath: photo.location!)
@@ -77,6 +79,8 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         let download = photosService?.activeDownloads[url]
         photosService?.activeDownloads[url] = nil
 
+        print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) finished download of \(download!.photo.url) to \(location.path)")
+        
         //SAVE FILE TO DOCUMENTS
         let docDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
         let destinationFile = NSURL(fileURLWithPath: docDir).appendingPathComponent(url.lastPathComponent)?.path
@@ -86,6 +90,7 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         }
         do {
             try fileManager.copyItem(atPath: location.path, toPath: destinationFile!)
+            print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) copied \(download!.photo.url) to \(destinationFile!)")
             download?.photo.downloaded = true
             download?.photo.location = destinationFile;
         } catch let error {
@@ -93,13 +98,13 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         }
         reloadCell(photo: (download?.photo)!, progress: 1)
         
-        detectFaces(photo: (download?.photo)!, filePath: destinationFile!)
+        print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) started faces detection of \(download!.photo.url)")
+        DispatchQueue.global(qos: .background).async {
+            self.detectFaces(photo: (download?.photo)!, filePath: destinationFile!)
+        }
     }
     
     func detectFaces(photo: Photo, filePath: String) {
-        print("Detect faces for \(photo.url)")
-        print("Path: \(filePath)")
-        
         guard let image = CIImage(image: loadImage(filePath: filePath)!) else {
             return
         }
@@ -108,6 +113,7 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         let faces = faceDetector?.features(in: image)
         
         photo.facesDetected = (faces?.count)!;
+        print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) found \(photo.facesDetected) faces detection in \(photo.url)")
         reloadCell(photo: photo, progress: 1)
         
     }
@@ -116,12 +122,17 @@ class PhotosViewController : UITableViewController, URLSessionDelegate, URLSessi
         
         guard let url = downloadTask.originalRequest?.url else { return }
         let download = photosService?.activeDownloads[url]
+        
+        let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+        if(progress>0.5 && !(download?.progressSaved)!){
+            print("\(String(describing: NSDate().timeIntervalSince(start! as Date))) 50% of \(download!.photo.url)")
+            download?.progressSaved = true;
+        }
 
-        reloadCell(photo: (download?.photo)!, progress: Float(totalBytesWritten) / Float(totalBytesExpectedToWrite))
+        reloadCell(photo: (download?.photo)!, progress: progress)
     }
     
     private func reloadCell(photo: Photo, progress: Float) {
-//        let download = photosService?.activeDownloads[url]
         photo.progress = progress
         let index = photo.index;
         DispatchQueue.main.async {
